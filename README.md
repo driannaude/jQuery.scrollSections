@@ -1,11 +1,11 @@
-# jQuery Scroll Sections Plugin (Version 0.4.3)
+# jQuery Scroll Sections Plugin (Version 0.5.1)
 
 A plugin that allows you to define (full page) sections and scroll between them with mousewheel, keyboard, scrollbar and/or touch moves.
 
 Here is a very simple [demo](http://lab.stephaneguigne.com/js/jquery-scrollsections/example/callbacks.html)
 
 
-## Requirement (for a full support)
+## Requirement (for full support)
 
 The following jQuery plugins are required for this plugin to work properly:
 - [scrollstart and scrollstop custom events](http://james.padolsey.com/demos/scrollevents/scroll-startstop.events.jquery.js) by [James Padolsey](http://james.padolsey.com)
@@ -15,18 +15,18 @@ The following jQuery plugins are required for this plugin to work properly:
 ## Examples
 
 Here is a basic example
-
+```javascript
 	$('.my_sections').scrollSections();
-
+```
 Here is a example with custom navigation (full implementation in ./example/customNavigation.html)
-
+```javascript
 	$('.my_sections').scrollSections({
 		createNavigation: false,
 		navigation: true
 	});	
-
+```
 Here is a full options example
-
+```javascript
 	$('.my_sections').scrollSections(
 	{
         // Attribute from which we retrieve the unique identifier for each section.
@@ -41,6 +41,8 @@ Here is a full options example
 		touch: true,
 		// Enable scrollbar controls.
 		scrollbar: true,
+		// Be able to scroll within the sections? If sections aren't larger than 100% of the wrapper, this will have no effect!
+		inSectionScroll: true,
 		// Enable navigation controls, also see createNavigation option.
 		navigation: true,
 		// Maximum sections to scroll within mousewheel interaction.
@@ -68,20 +70,25 @@ Here is a full options example
 		exceptions: false
 	});
 
+```
 
 ## Cross-browser Compatibility
 
 Modern browsers: Chrome, Firefox, Safari, Opera and IE8+
 
 
-## License
+## License & Credit
 
 Under [MIT license](http://opensource.org/licenses/MIT)
 
+Copyright &copy; 2011-2013 [Stéphane Guigné](http://stephaneguigne.com)
 
-Copyright(c) 2011-2013 [Stéphane Guigné](http://stephaneguigne.com)
+Original Open Pull Requests added here by [Drian Naude](https://naude.io)
+
 
 
 ## Logs
 
+v0.5.1 - Fxied mobile touch issues, fixed osx inertia problem with apple magic mouse and trackpad
+v0.5.0 - Added in-section scroll
 v0.4.3 - send back arguments to callback functions 

@@ -6,7 +6,7 @@ A plugin that allows you to define (full page) sections and scroll between them 
  - jQuery mousewheel if you want mousewheel support {@link https://github.com/brandonaaron/jquery-mousewheel}
  - jQuery Special Events scrollstart & scrollstop if you want scrollbar support {@link http://james.padolsey.com/demos/scrollevents/}
 *
-* @version 0.5.0
+* @version 0.5.1
 * @link https://github.com/driannaude/jQuery.scrollSections
 * @author Drian Naude <https://naude.io/>
 * @author 
@@ -272,16 +272,18 @@ A plugin that allows you to define (full page) sections and scroll between them 
 			var self = this;
 
 			this._$body.bind('touchstart', function (event) {
-				var startEvent = event;
+				var startEvent = event.originalEvent.touches[0];
 
 				event.preventDefault();
-				self._$body.bind('touchmove', function (event) {
-					var diff = { x: startEvent.clientX - event.clientX, y: startEvent.clientY - event.clientY };
+				self._$body.unbind('touchmove.scrollSections').bind('touchmove.scrollSections', function (event) {
+					var moveEvent = event.originalEvent.touches[0];
 					var nextStep;
 					event.preventDefault();
 					if ((diff.y <= -100 || diff.y >= 100) && Math.abs(diff.y) > Math.abs(diff.x)) {
 						nextStep = diff.y < 0 ? self._currentStep - 1 : self._currentStep + 1;
 						self.customScrollTo(nextStep);
+						// Unbind all touchmove.scrollSections namespaced events
+						self._$body.unbind('touchmove.scrollSections');
 					}
 					return false;
 				});
@@ -446,14 +448,26 @@ A plugin that allows you to define (full page) sections and scroll between them 
 					return this;
 				}
 			}
+			// Fix for inertia skipping sections
+			var prevTime = new Date().getTime();
 
 			this._$window.mousewheel(function (event, delta, deltaX, deltaY) {
+				// Fix for inertia skipping sections
+				var curTime = new Date().getTime();
+				var fireEvent = false;
+				if(typeof prevTime !== 'undefined') {
+					var timeDiff = curTime - prevTime;
+					if(timeDiff > 50) {
+						fireEvent = true;
+					}
+				}
+				prevTime = curTime;	
 				var scrollTop = self._$htmlBody.scrollTop() || self._$window.scrollTop();
 				var stepDiff = null;
 				var nextStep = -1;
 
 				// Only scroll if we are not animating and scrolling is not paused.
-				if (!(self._isAnimated && self._scrollPaused)) {
+				if (!(self._isAnimated && self._scrollPaused) && fireEvent) {
 
 					deltaY = deltaY>>0; // Because steps numbers are integers
 
