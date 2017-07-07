@@ -6,14 +6,14 @@ A plugin that allows you to define (full page) sections and scroll between them 
  - jQuery mousewheel if you want mousewheel support {@link https://github.com/brandonaaron/jquery-mousewheel}
  - jQuery Special Events scrollstart & scrollstop if you want scrollbar support {@link http://james.padolsey.com/demos/scrollevents/}
 *
-* @version 0.4.3
-* @link https://github.com/guins/jquery-scrollsections
-* @author Stéphane Guigné <http://stephaneguigne.com/>
-* @author Richard Fussenegger <http://richard.fussenegger.info/>
+* @version 0.5.0
+* @link https://github.com/driannaude/jQuery.scrollSections
+* @author Drian Naude <https://naude.io/>
+* @author 
 * @license MIT
 * @copyright (c) 2011-2013, Stéphane Guigné
 *
-* Last modification : 2013-08-16
+* Last modification : 2017-07-07
 *
 */
 
@@ -62,6 +62,8 @@ A plugin that allows you to define (full page) sections and scroll between them 
 		animateScrollToFirstSection: false,
 		// Create navigation? If the option navigation is set to false, this will have no effect!
 		createNavigation: true,
+		// Be able to scroll within the sections? If sections aren't larger than 100% of the wrapper, this will have no effect!
+		inSectionScroll: true,
 		// The animation speed.
 		speed: 500,
 		// Throw execption if something goes wrong.
@@ -108,6 +110,7 @@ A plugin that allows you to define (full page) sections and scroll between them 
 		this._isAnimated = false;
 		this._wheelDelay = null;
 		this._scrollPaused = false;
+		this._scrollDiff = 114;
 		this._$nav = null;
 		this._ltIE9 = false;
 
@@ -252,7 +255,7 @@ A plugin that allows you to define (full page) sections and scroll between them 
 						}
 					}
 				}
-				if (nextStep > -1) {
+				if (self._currentStep != nextStep && nextStep > -1) {
 					self.customScrollTo(nextStep);
 				}
 			});
@@ -367,12 +370,17 @@ A plugin that allows you to define (full page) sections and scroll between them 
 			var speed;
 
 			if (index != null && index >= 0 && index < this._sections) {
-				this._currentStep = index;
 
 				this._$previousSection = this._$currentSection;
 				this._$currentSection = this._$sections[index];
 
-				yTo = this._$currentSection.offset().top;
+				if (index < self._currentStep) {
+					yTo = this._$currentSection.offset().top + this._$currentSection.height() - self._$htmlBody.outerHeight();
+				}
+				else {
+					yTo = this._$currentSection.offset().top;
+				}
+				this._currentStep = index;
 				speed = noAnimation ? 0 : this.options.speed;
 
 				// Mark any link on the page that refers to our active section active.
@@ -440,10 +448,9 @@ A plugin that allows you to define (full page) sections and scroll between them 
 			}
 
 			this._$window.mousewheel(function (event, delta, deltaX, deltaY) {
+				var scrollTop = self._$htmlBody.scrollTop() || self._$window.scrollTop();
 				var stepDiff = null;
 				var nextStep = -1;
-
-				event.preventDefault();
 
 				// Only scroll if we are not animating and scrolling is not paused.
 				if (!(self._isAnimated && self._scrollPaused)) {
@@ -453,31 +460,46 @@ A plugin that allows you to define (full page) sections and scroll between them 
 					// Scroll Down
 					if (deltaY < 0) {
 
-						// Only allow the user to scroll down the maximum sections as defined in our options.
-						if (deltaY < -self.options.scrollMax) {
-							deltaY = -self.options.scrollMax;
-						}
+						if (self._currentStep + 1 < self._sections) {
 
-						if ((!nextStep || !stepDiff || deltaY < stepDiff) && ((self._currentStep - deltaY) < self._sections)) {
-							stepDiff = deltaY;
-							nextStep = self._currentStep - stepDiff;
+							// Only allow the user to scroll down the maximum sections as defined in our options.
+							if (deltaY < -self.options.scrollMax) {
+								deltaY = -self.options.scrollMax;
+							}
+
+							if (self.options.inSectionScroll && (scrollTop + self._$htmlBody.outerHeight() - (deltaY * self._scrollDiff) > self._$sections[self._currentStep + 1].offset().top)) {
+								nextStep = self._currentStep + 1;
+								stepDiff = true;
+							} else if (!self.options.inSectionScroll && ((!nextStep || !stepDiff || deltaY < stepDiff) && ((self._currentStep - deltaY) < self._sections))) {
+								stepDiff = deltaY;
+								nextStep = self._currentStep - stepDiff;
+							}
 						}
 					}
 					// Scroll Up
 					else {
 
-						// Only allow the user to scroll up the maximum sections as defined in our options.
-						if (deltaY > self.options.scrollMax) {
-							deltaY = self.options.scrollMax;
-						}
+						if (self._currentStep > 0) {
 
-						if ((!nextStep || !stepDiff || deltaY > stepDiff) && ((self._currentStep - deltaY) > -1)) {
-							stepDiff = deltaY;
-							nextStep = self._currentStep - stepDiff;
+							// Only allow the user to scroll up the maximum sections as defined in our options.
+							if (deltaY > self.options.scrollMax) {
+								deltaY = self.options.scrollMax;
+							}
+
+							if (self.options.inSectionScroll && (scrollTop - (deltaY * self._scrollDiff) < self._$sections[self._currentStep].offset().top)) {
+								nextStep = self._currentStep - 1;
+								stepDiff = true;
+							} else if (!self.options.inSectionScroll && ((!nextStep || !stepDiff || deltaY > stepDiff) && ((self._currentStep - deltaY) > -1))) {
+								stepDiff = deltaY;
+								nextStep = self._currentStep - stepDiff;
+							}
 						}
 					}
 
 					if (stepDiff && nextStep > -1) {
+
+						event.preventDefault();
+
 						if (self._wheelDelay) {
 							clearTimeout(self._wheelDelay);
 						}
@@ -489,10 +511,10 @@ A plugin that allows you to define (full page) sections and scroll between them 
 						} else {
 							self.mousewheelScrollTo(nextStep);
 						}
+
+						return false;
 					}
 				}
-
-				return false;
 			});
 
 			return this;
