@@ -41,7 +41,9 @@ Here is a full options example
 		touch: true,
 		// Enable scrollbar controls.
 		scrollbar: true,
-		// Be able to scroll within the sections? If sections aren't larger than 100% of the wrapper, this will have no effect!
+		// Be able to scroll within the sections? 
+		// If sections aren't larger than 100% of the wrapper, 
+		// this will have no effect!
 		inSectionScroll: true,
 		// Enable navigation controls, also see createNavigation option.
 		navigation: true,
@@ -57,8 +59,8 @@ Here is a full options example
 		after: function($currentSection, $previousSection){},
 		// Prefix for classes and ids of DOM elements.
 		prefix: 'scrollsections',
-		// Scroll to first section on initialization, instead of the section that is visible. Also have a look at the option
-		// animateScrollToFirstSection.
+		// Scroll to first section on initialization, instead of the section that is visible. 
+		// Also have a look at the option animateScrollToFirstSection.
 		alwaysStartWithFirstSection: false,
 		// Scroll to initial section without animation.
 		animateScrollToFirstSection: false,
@@ -89,6 +91,8 @@ Original Open Pull Requests added here by [Drian Naude](https://naude.io)
 
 ## Logs
 
-v0.5.1 - Fxied mobile touch issues, fixed osx inertia problem with apple magic mouse and trackpad
-v0.5.0 - Added in-section scroll
-v0.4.3 - send back arguments to callback functions 
+| Release | Notes |
+| ------- | :-----|
+| v0.5.1 | Fixed mobile touch issues, fixed osx inertia problem with apple magic mouse and trackpad. |
+| v0.5.0 | Added in-section scroll. |
+| v0.4.3 | Send back arguments to callback functions. |
